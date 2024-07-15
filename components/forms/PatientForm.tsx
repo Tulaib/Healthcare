@@ -14,42 +14,53 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "../ui/input";
-import CustomFormField from "../CustomFormField";
-
-export enum FormFieldType {
-  INPUT = "input",
-  CHECKBOX = "checkbox",
-  TEXTAREA = "textarea",
-  PHONE_INPUT = "phoneInput",
-  DATE_PICKER = "datePicker",
-  SELECT = "select",
-  SKELETON = "skeleton",
-}
-
-const formSchema = z.object({
-  username: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
-  }),
-});
+import CustomFormField, { FormFieldType } from "../CustomFormField";
+import SubmitButton from "../SubmitButton";
+import { useState } from "react";
+import { UserFormValidation } from "@/lib/validation";
+import { createUser } from "@/lib/actions/patient.actions";
+import { useRouter } from "next/navigation";
+import 'react-phone-number-input/style.css'
 
 const PatientForm = () => {
   // 1. Define your form.
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const router = useRouter();
+  const form = useForm<z.infer<typeof UserFormValidation>>({
+    resolver: zodResolver(UserFormValidation),
     defaultValues: {
-      username: "",
+      name: "",
+      email: "",
+      phone: "",
     },
   });
-
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit({
+    name,
+    email,
+    phone,
+  }: z.infer<typeof UserFormValidation>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
-    console.log(values);
+    setisLoading(true);
+    try {
+      const userData = {
+        name,
+        email,
+        phone,
+      };
+      console.log("userData", userData);
+      const user: any = await createUser(userData);
+      if (user) router.push(`/patients/${user.$id}/register`);
+      console.log("form", user);
+    } catch (error) {
+      console.log(error);
+    }
+    setisLoading(false);
   }
+
+  const [isLoading, setisLoading] = useState(false);
   return (
     <div>
-      {" "}
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -62,13 +73,32 @@ const PatientForm = () => {
           <CustomFormField
             control={form.control}
             fieldType={FormFieldType.INPUT}
-            name="username"
+            name="name"
             label="Full name"
             placeholder="Jhon Doe"
             iconSrc="/assets/icons/user.svg"
             iconAlt="user"
           />
-          <Button type="submit">Submit</Button>
+          <CustomFormField
+            control={form.control}
+            fieldType={FormFieldType.INPUT}
+            name="email"
+            label="Email"
+            placeholder="Jhon@gmail.com"
+            // iconSrc="/assets/icons/email.svg"
+            // iconAlt="email"
+          />
+          <CustomFormField
+            control={form.control}
+            fieldType={FormFieldType.PHONE_INPUT}
+            name="phone"
+            label="Phone Number"
+            placeholder="+92 307 2991222"
+            // iconSrc="/assets/icons/phone.svg"
+            // iconAlt="email"
+          />
+          {/* <Button type="submit">Submit</Button> */}
+          <SubmitButton isLoading={isLoading}>Get started</SubmitButton>
         </form>
       </Form>
     </div>
