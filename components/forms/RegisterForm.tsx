@@ -23,7 +23,7 @@ import { PatientFormValidation } from "@/lib/validation";
 import "react-datepicker/dist/react-datepicker.css";
 import "react-phone-number-input/style.css";
 import CustomFormField, { FormFieldType } from "../CustomFormField";
-import { FileUploader } from '../FileUploader';
+import { FileUploader } from "../FileUploader";
 import SubmitButton from "../SubmitButton";
 
 const RegisterForm = ({ user }: { user: User }) => {
@@ -86,6 +86,7 @@ const RegisterForm = ({ user }: { user: User }) => {
       };
 
       const newPatient = await registerPatient(patient);
+      console.log("newPatient form", newPatient);
 
       if (newPatient) {
         router.push(`/patients/${user.$id}/new-appointment`);
